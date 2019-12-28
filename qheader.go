@@ -6,6 +6,7 @@
 package qheader
 
 import (
+	"net/http"
 	"sort"
 	"strconv"
 	"strings"
@@ -20,8 +21,8 @@ type Header struct {
 	Q     float32
 }
 
-func (accept *Header) hasWildcard() bool {
-	return strings.HasSuffix(accept.Value, "/*")
+func (header *Header) hasWildcard() bool {
+	return strings.HasSuffix(header.Value, "/*")
 }
 
 // 将 Content 的内容解析到 Value 和 Q 中
@@ -43,6 +44,26 @@ func parseHeader(v string) (val string, q float32, err error) {
 	}
 
 	return val, q, nil
+}
+
+// Accept 返回报头 Accept 处理后的内容列表
+func Accept(r *http.Request) ([]*Header, error) {
+	return Parse(r.Header.Get("Accept"), "*/*")
+}
+
+// AcceptLanguage 返回报头 Accept-Language 处理后的内容列表
+func AcceptLanguage(r *http.Request) ([]*Header, error) {
+	return Parse(r.Header.Get("Accept-Language"), "*")
+}
+
+// AcceptCharset 返回报头 Accept-Charset 处理后的内容列表
+func AcceptCharset(r *http.Request) ([]*Header, error) {
+	return Parse(r.Header.Get("Accept-Charset"), "*")
+}
+
+// AcceptEncoding 返回报头 Accept-Encoding 处理后的内容列表
+func AcceptEncoding(r *http.Request) ([]*Header, error) {
+	return Parse(r.Header.Get("Accept-Encoding"), "*")
 }
 
 // Parse 将报头内容解析为 []*Header，并对内容进行排序之后返回。
@@ -98,12 +119,12 @@ func Parse(header string, any string) ([]*Header, error) {
 		header = header[index+1:]
 	}
 
-	sortHeaders(accepts)
+	sortHeaders(accepts, any)
 
 	return accepts, nil
 }
 
-func sortHeaders(accepts []*Header) {
+func sortHeaders(accepts []*Header, any string) {
 	sort.SliceStable(accepts, func(i, j int) bool {
 		ii := accepts[i]
 		jj := accepts[j]
@@ -113,11 +134,11 @@ func sortHeaders(accepts []*Header) {
 		}
 
 		switch {
-		case ii.Value == "*/*" || ii.Value == "*":
+		case ii.Value == any:
 			return false
-		case jj.Value == "*/*" || ii.Value == "*":
+		case jj.Value == any:
 			return true
-		case ii.hasWildcard():
+		case ii.hasWildcard(): // 如果 any == * 则此判断不启作用
 			return false
 		default: // !ii.hasWildcard()
 			return jj.hasWildcard()

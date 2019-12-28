@@ -5,6 +5,8 @@
 package qheader
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/issue9/assert"
@@ -37,6 +39,30 @@ func BenchmarkParse_one(b *testing.B) {
 		as, err := Parse(str, "*/*")
 		a.NotError(err).True(len(as) > 0)
 	}
+}
+
+func TestAccept(t *testing.T) {
+	a := assert.New(t)
+
+	r := httptest.NewRequest(http.MethodGet, "/path", nil)
+	r.Header.Add("Accept", "text/json;q=0.5,text/xml;q=0.8,application/xml;q=0.8")
+	accepts, err := Accept(r)
+	a.NotError(err).NotNil(accepts)
+	a.Equal(accepts[0].Value, "text/xml")
+	a.Equal(accepts[1].Value, "application/xml")
+	a.Equal(accepts[2].Value, "text/json")
+}
+
+func TestAcceptLanguage(t *testing.T) {
+	a := assert.New(t)
+
+	r := httptest.NewRequest(http.MethodGet, "/path", nil)
+	r.Header.Add("Accept-Language", "zh-tw;q=0.5,zh-cn;q=0.8,en;q=0.8")
+	accepts, err := AcceptLanguage(r)
+	a.NotError(err).NotNil(accepts)
+	a.Equal(accepts[0].Value, "zh-cn")
+	a.Equal(accepts[1].Value, "en")
+	a.Equal(accepts[2].Value, "zh-tw")
 }
 
 func TestParseHeader(t *testing.T) {
@@ -85,6 +111,10 @@ func TestParseHeader(t *testing.T) {
 
 func TestParse(t *testing.T) {
 	a := assert.New(t)
+
+	a.Panic(func() {
+		Parse(",a1", "not-allow")
+	})
 
 	as, err := Parse(",a1,a2,a3;q=0.5,a4,a5;q=0.9,a6;a61;q=0.8", "*/*")
 	a.NotError(err).NotEmpty(as)
