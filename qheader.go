@@ -25,7 +25,7 @@ func (accept *Header) hasWildcard() bool {
 }
 
 // 将 Content 的内容解析到 Value 和 Q 中
-func parseAccept(v string) (val string, q float32, err error) {
+func parseHeader(v string) (val string, q float32, err error) {
 	q = 1 // 设置为默认值
 
 	index := strings.IndexByte(v, ';')
@@ -67,7 +67,7 @@ func Parse(header string) ([]*Header, error) {
 
 		if index == -1 { // 最后一条数据
 			if header != "" {
-				val, q, err := parseAccept(header)
+				val, q, err := parseHeader(header)
 				if err != nil {
 					return nil, err
 				}
@@ -80,7 +80,7 @@ func Parse(header string) ([]*Header, error) {
 
 		// 由上面的两个 if 保证，此处 v 肯定不为空
 		v := header[:index]
-		val, q, err := parseAccept(v)
+		val, q, err := parseHeader(v)
 		if err != nil {
 			return nil, err
 		}
@@ -91,12 +91,12 @@ func Parse(header string) ([]*Header, error) {
 		header = header[index+1:]
 	}
 
-	sortAccepts(accepts)
+	sortHeaders(accepts)
 
 	return accepts, nil
 }
 
-func sortAccepts(accepts []*Header) {
+func sortHeaders(accepts []*Header) {
 	sort.SliceStable(accepts, func(i, j int) bool {
 		ii := accepts[i]
 		jj := accepts[j]

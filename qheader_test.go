@@ -10,11 +10,11 @@ import (
 	"github.com/issue9/assert"
 )
 
-func BenchmarkParseAccept(b *testing.B) {
+func BenchmarkParseHeader(b *testing.B) {
 	a := assert.New(b)
 
 	for i := 0; i < b.N; i++ {
-		_, _, err := parseAccept("application/xml;q=0.9")
+		_, _, err := parseHeader("application/xml;q=0.9")
 		a.NotError(err)
 	}
 }
@@ -39,47 +39,47 @@ func BenchmarkParse_one(b *testing.B) {
 	}
 }
 
-func TestParseAccept(t *testing.T) {
+func TestParseHeader(t *testing.T) {
 	a := assert.New(t)
 
-	v, q, err := parseAccept("application/xml")
+	v, q, err := parseHeader("application/xml")
 	a.NotError(err).
 		Equal(v, "application/xml").
 		Equal(q, 1.0)
 
-	v, q, err = parseAccept("application/xml;")
+	v, q, err = parseHeader("application/xml;")
 	a.NotError(err).
 		Equal(v, "application/xml").
 		Equal(q, 1.0)
 
-	v, q, err = parseAccept("application/xml;q=0.9")
+	v, q, err = parseHeader("application/xml;q=0.9")
 	a.NotError(err).
 		Equal(v, "application/xml").
 		Equal(q, float32(0.9))
 
-	v, q, err = parseAccept(";application/xml;q=0.9")
+	v, q, err = parseHeader(";application/xml;q=0.9")
 	a.NotError(err).
 		Equal(v, "").
 		Equal(q, float32(0.9))
 
-	v, q, err = parseAccept("application/xml;qq=xx;q=0.9")
+	v, q, err = parseHeader("application/xml;qq=xx;q=0.9")
 	a.NotError(err).
 		Equal(v, "application/xml").
 		Equal(q, float32(0.9))
 
-	v, q, err = parseAccept("text/html;format=xx;q=0.9")
+	v, q, err = parseHeader("text/html;format=xx;q=0.9")
 	a.NotError(err).
 		Equal(v, "text/html").
 		Equal(q, float32(0.9))
 
 	// 要求 q 必须在最后，否则还是会出错
-	v, q, err = parseAccept("text/html;q=0.9;format=xx")
+	v, q, err = parseHeader("text/html;q=0.9;format=xx")
 	a.Error(err).Empty(v).Empty(q)
 
-	v, q, err = parseAccept("text/html;format=xx;q=x.9")
+	v, q, err = parseHeader("text/html;format=xx;q=x.9")
 	a.Error(err).Empty(v).Empty(q)
 
-	v, q, err = parseAccept("text/html;format=xx;q=0.9x")
+	v, q, err = parseHeader("text/html;format=xx;q=0.9x")
 	a.Error(err).Empty(v).Empty(q)
 }
 
@@ -130,14 +130,14 @@ func TestParse(t *testing.T) {
 	a.Error(err).Empty(as)
 }
 
-func TestSortAccepts(t *testing.T) {
+func TestSortHeaders(t *testing.T) {
 	a := assert.New(t)
 
 	as := []*Header{
 		&Header{Value: "*/*", Q: 0.7},
 		&Header{Value: "a/*", Q: 0.7},
 	}
-	sortAccepts(as)
+	sortHeaders(as)
 	a.Equal(as[0].Value, "a/*")
 	a.Equal(as[1].Value, "*/*")
 
@@ -146,7 +146,7 @@ func TestSortAccepts(t *testing.T) {
 		&Header{Value: "a/*", Q: 0.7},
 		&Header{Value: "b/*", Q: 0.7},
 	}
-	sortAccepts(as)
+	sortHeaders(as)
 	a.Equal(as[0].Value, "a/*")
 	a.Equal(as[1].Value, "b/*")
 	a.Equal(as[2].Value, "*/*")
@@ -157,7 +157,7 @@ func TestSortAccepts(t *testing.T) {
 		&Header{Value: "c/c", Q: 0.7},
 		&Header{Value: "b/*", Q: 0.7},
 	}
-	sortAccepts(as)
+	sortHeaders(as)
 	a.Equal(as[0].Value, "c/c")
 	a.Equal(as[1].Value, "a/*")
 	a.Equal(as[2].Value, "b/*")
@@ -170,7 +170,7 @@ func TestSortAccepts(t *testing.T) {
 		&Header{Value: "b/*", Q: 0.7},
 		&Header{Value: "c/c", Q: 0.7},
 	}
-	sortAccepts(as)
+	sortHeaders(as)
 	a.Equal(as[0].Value, "d/d")
 	a.Equal(as[1].Value, "c/c")
 	a.Equal(as[2].Value, "a/*")
@@ -185,7 +185,7 @@ func TestSortAccepts(t *testing.T) {
 		&Header{Value: "b/*", Q: 0.7},
 		&Header{Value: "c/c", Q: 0.7},
 	}
-	sortAccepts(as)
+	sortHeaders(as)
 	a.Equal(as[0].Value, "a/*")
 	a.Equal(as[1].Value, "d/d")
 	a.Equal(as[2].Value, "c/c")
