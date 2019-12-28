@@ -55,7 +55,14 @@ func parseHeader(v string) (val string, q float32, err error) {
 // q 值为 0 的数据将被过滤，比如：
 //  application/*;q=0.1,application/xml;q=0.1,text/html;q=0
 // 其中的 text/html 不会被返回，application/xml 的优先级会高于 application/*
-func Parse(header string) ([]*Header, error) {
+//
+// header 表示报头的内容；
+// any 表示通配符的值，只能是 */* 或是 *，其它情况则 panic；
+func Parse(header string, any string) ([]*Header, error) {
+	if any != "*" && any != "*/*" {
+		panic("any 值错误")
+	}
+
 	accepts := make([]*Header, 0, strings.Count(header, ",")+1)
 
 	for {
