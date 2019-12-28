@@ -106,9 +106,9 @@ func sortHeaders(accepts []*Header) {
 		}
 
 		switch {
-		case ii.Value == "*/*":
+		case ii.Value == "*/*" || ii.Value == "*":
 			return false
-		case jj.Value == "*/*":
+		case jj.Value == "*/*" || ii.Value == "*":
 			return true
 		case ii.hasWildcard():
 			return false
