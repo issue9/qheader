@@ -19,6 +19,7 @@ type Header struct {
 	// 解析之后的内容
 	Value string
 	Q     float32
+	Err   error
 }
 
 func (header *Header) hasWildcard() bool {
@@ -26,47 +27,44 @@ func (header *Header) hasWildcard() bool {
 }
 
 // 将 Content 的内容解析到 Value 和 Q 中
-func parseHeader(v string) (val string, q float32, err error) {
-	q = 1 // 设置为默认值
-
-	index := strings.IndexByte(v, ';')
-	if index < 0 { // 没有 q 的内容
-		return v, q, nil
+func parseHeader(content string) *Header {
+	index := strings.IndexByte(content, ';')
+	if index < 0 { // 不包含 ; 表示除主内容不包含其它任何附加信息
+		return &Header{Content: content, Value: content, Q: 1}
 	}
 
-	val = v[:index]
-	if index = strings.LastIndex(v, ";q="); index >= 0 {
-		qq, err := strconv.ParseFloat(v[index+3:], 32)
+	val := content[:index]
+	if index = strings.LastIndex(content, ";q="); index >= 0 {
+		q, err := strconv.ParseFloat(content[index+3:], 32)
 		if err != nil {
-			return "", 0, err
+			return &Header{Content: content, Value: val, Err: err}
 		}
-		q = float32(qq)
+		return &Header{Content: content, Value: val, Q: float32(q)}
 	}
-
-	return val, q, nil
+	return &Header{Content: content, Value: val, Q: 1}
 }
 
 // Accept 返回报头 Accept 处理后的内容列表
-func Accept(r *http.Request) ([]*Header, error) {
+func Accept(r *http.Request) []*Header {
 	return Parse(r.Header.Get("Accept"), "*/*")
 }
 
 // AcceptLanguage 返回报头 Accept-Language 处理后的内容列表
-func AcceptLanguage(r *http.Request) ([]*Header, error) {
+func AcceptLanguage(r *http.Request) []*Header {
 	return Parse(r.Header.Get("Accept-Language"), "*")
 }
 
 // AcceptCharset 返回报头 Accept-Charset 处理后的内容列表
-func AcceptCharset(r *http.Request) ([]*Header, error) {
+func AcceptCharset(r *http.Request) []*Header {
 	return Parse(r.Header.Get("Accept-Charset"), "*")
 }
 
 // AcceptEncoding 返回报头 Accept-Encoding 处理后的内容列表
-func AcceptEncoding(r *http.Request) ([]*Header, error) {
+func AcceptEncoding(r *http.Request) []*Header {
 	return Parse(r.Header.Get("Accept-Encoding"), "*")
 }
 
-// Parse 将报头内容解析为 []*Header，并对内容进行排序之后返回。
+// Parse 将报头内容解析为 []*Header，并对内容进行排序之后返回
 //
 //
 // 排序方式如下:
@@ -79,7 +77,7 @@ func AcceptEncoding(r *http.Request) ([]*Header, error) {
 //
 // header 表示报头的内容；
 // any 表示通配符的值，只能是 */* 或是 *，其它情况则 panic；
-func Parse(header string, any string) ([]*Header, error) {
+func Parse(header string, any string) []*Header {
 	if any != "*" && any != "*/*" {
 		panic("any 值错误")
 	}
@@ -95,33 +93,20 @@ func Parse(header string, any string) ([]*Header, error) {
 
 		if index == -1 { // 最后一条数据
 			if header != "" {
-				val, q, err := parseHeader(header)
-				if err != nil {
-					return nil, err
-				}
-				if q > 0 {
-					accepts = append(accepts, &Header{Content: header, Value: val, Q: q})
-				}
+				accepts = append(accepts, parseHeader(header))
 			}
 			break
 		}
 
 		// 由上面的两个 if 保证，此处 v 肯定不为空
-		v := header[:index]
-		val, q, err := parseHeader(v)
-		if err != nil {
-			return nil, err
-		}
-		if q > 0 {
-			accepts = append(accepts, &Header{Content: v, Value: val, Q: q})
-		}
+		accepts = append(accepts, parseHeader(header[:index]))
 
 		header = header[index+1:]
 	}
 
 	sortHeaders(accepts, any)
 
-	return accepts, nil
+	return accepts
 }
 
 func sortHeaders(accepts []*Header, any string) {
