@@ -1,6 +1,4 @@
-// Copyright 2018 by caixw, All rights reserved.
-// Use of this source code is governed by a MIT
-// license that can be found in the LICENSE file.
+// SPDX-License-Identifier: MIT
 
 package qheader
 
@@ -21,7 +19,7 @@ func BenchmarkParseHeader(b *testing.B) {
 	}
 }
 
-func BenchmarkParse_mult(b *testing.B) {
+func BenchmarkParse_multiple(b *testing.B) {
 	a := assert.New(b)
 
 	str := "application/json;q=0.9,text/plain;q=0.8,text/html,text/xml,*/*;q=0.1"
@@ -164,17 +162,17 @@ func TestSortHeaders(t *testing.T) {
 	a := assert.New(t)
 
 	as := []*Header{
-		&Header{Value: "*/*", Q: 0.7},
-		&Header{Value: "a/*", Q: 0.7},
+		{Value: "*/*", Q: 0.7},
+		{Value: "a/*", Q: 0.7},
 	}
 	sortHeaders(as, "*/*")
 	a.Equal(as[0].Value, "a/*")
 	a.Equal(as[1].Value, "*/*")
 
 	as = []*Header{
-		&Header{Value: "*/*", Q: 0.7},
-		&Header{Value: "a/*", Q: 0.7},
-		&Header{Value: "b/*", Q: 0.7},
+		{Value: "*/*", Q: 0.7},
+		{Value: "a/*", Q: 0.7},
+		{Value: "b/*", Q: 0.7},
 	}
 	sortHeaders(as, "*/*")
 	a.Equal(as[0].Value, "a/*")
@@ -182,10 +180,10 @@ func TestSortHeaders(t *testing.T) {
 	a.Equal(as[2].Value, "*/*")
 
 	as = []*Header{
-		&Header{Value: "*/*", Q: 0.7},
-		&Header{Value: "a/*", Q: 0.7},
-		&Header{Value: "c/c", Q: 0.7},
-		&Header{Value: "b/*", Q: 0.7},
+		{Value: "*/*", Q: 0.7},
+		{Value: "a/*", Q: 0.7},
+		{Value: "c/c", Q: 0.7},
+		{Value: "b/*", Q: 0.7},
 	}
 	sortHeaders(as, "*/*")
 	a.Equal(as[0].Value, "c/c")
@@ -194,11 +192,11 @@ func TestSortHeaders(t *testing.T) {
 	a.Equal(as[3].Value, "*/*")
 
 	as = []*Header{
-		&Header{Value: "d/d", Q: 0.7},
-		&Header{Value: "a/*", Q: 0.7},
-		&Header{Value: "*/*", Q: 0.7},
-		&Header{Value: "b/*", Q: 0.7},
-		&Header{Value: "c/c", Q: 0.7},
+		{Value: "d/d", Q: 0.7},
+		{Value: "a/*", Q: 0.7},
+		{Value: "*/*", Q: 0.7},
+		{Value: "b/*", Q: 0.7},
+		{Value: "c/c", Q: 0.7},
 	}
 	sortHeaders(as, "*/*")
 	a.Equal(as[0].Value, "d/d")
@@ -209,11 +207,11 @@ func TestSortHeaders(t *testing.T) {
 
 	// Q 值不一样
 	as = []*Header{
-		&Header{Value: "d/d", Q: 0.7},
-		&Header{Value: "a/*", Q: 0.8},
-		&Header{Value: "*/*", Q: 0.7},
-		&Header{Value: "b/*", Q: 0.7},
-		&Header{Value: "c/c", Q: 0.7},
+		{Value: "d/d", Q: 0.7},
+		{Value: "a/*", Q: 0.8},
+		{Value: "*/*", Q: 0.7},
+		{Value: "b/*", Q: 0.7},
+		{Value: "c/c", Q: 0.7},
 	}
 	sortHeaders(as, "*/*")
 	a.Equal(as[0].Value, "a/*")
@@ -224,11 +222,11 @@ func TestSortHeaders(t *testing.T) {
 
 	// Q 值不一样
 	as = []*Header{
-		&Header{Value: "zh-cn", Q: 0.7},
-		&Header{Value: "zh-tw", Q: 0.8},
-		&Header{Value: "*", Q: 0.7},
-		&Header{Value: "en", Q: 0.7},
-		&Header{Value: "en-us", Q: 0.7},
+		{Value: "zh-cn", Q: 0.7},
+		{Value: "zh-tw", Q: 0.8},
+		{Value: "*", Q: 0.7},
+		{Value: "en", Q: 0.7},
+		{Value: "en-us", Q: 0.7},
 	}
 	sortHeaders(as, "*")
 	a.Equal(as[0].Value, "zh-tw")

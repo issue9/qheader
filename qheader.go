@@ -1,8 +1,6 @@
-// Copyright 2018 by caixw, All rights reserved.
-// Use of this source code is governed by a MIT
-// license that can be found in the LICENSE file.
+// SPDX-License-Identifier: MIT
 
-// Package qheader 用于处理 quality factor 报头。
+// Package qheader 用于处理 quality factor 报头
 package qheader
 
 import (
@@ -12,7 +10,9 @@ import (
 	"strings"
 )
 
-// Header 表示 Header* 的报头元素
+// Header 表示报头内容的单个元素内容
+//
+// 比如 zh-cmt;q=0.8, zh-cmn;q=1 分根据 , 拆分成两个 Header 对象。
 type Header struct {
 	Content string // 完整的内容
 
