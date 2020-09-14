@@ -1,6 +1,5 @@
 qheader
-[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fissue9%2Fqheader%2Fbadge%3Fref%3Dmaster&style=flat)](https://actions-badge.atrox.dev/issue9/qheader/goto?ref=master)
-[![Go Report Card](https://goreportcard.com/badge/github.com/issue9/qheader)](https://goreportcard.com/report/github.com/issue9/qheader)
+[![Go](https://github.com/issue9/qheader/workflows/Go/badge.svg)](https://github.com/issue9/qheader/actions?query=workflow%3AGo)
 [![license](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/issue9/qheader/branch/master/graph/badge.svg)](https://codecov.io/gh/issue9/qheader)
 ======
@@ -18,7 +17,7 @@ go get github.com/issue9/qheader
 ----
 
 [![Go Walker](https://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/issue9/qheader)
-[![GoDoc](https://godoc.org/github.com/issue9/qheader?status.svg)](https://godoc.org/github.com/issue9/qheader)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/issue9/qheader)](https://pkg.go.dev/github.com/issue9/qheader)
 
 版权
 ----
