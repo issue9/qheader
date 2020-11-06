@@ -14,34 +14,33 @@ import (
 //
 // 比如 zh-cmt;q=0.8, zh-cmn;q=1 分根据 , 拆分成两个 Header 对象。
 type Header struct {
-	Content string // 完整的内容
+	// 完整的报头内容
+	Raw string
 
 	// 解析之后的内容
+
+	// 主值
+	// 比如 application/json;q=0.9，Value 的值为 application/json
 	Value string
-	Q     float32
-	Err   error
+
+	// 其它参数，q 参数也在其中。如果参数数只有名称，没有值，则键值为空。
+	// 比如以下值 application/json;q=0.9;level=1;p 将被解析为以下内容：
+	//  map[string]string {
+	//      "q": "0.9",
+	//      "level": "1",
+	//      "p": "",
+	//  }
+	Params map[string]string
+
+	// 为 q 参数的转换后的 float64 类型值
+	Q float64
+
+	// 如果 Q 解析失败，则会将错误信息保存在 Err 上
+	Err error
 }
 
 func (header *Header) hasWildcard() bool {
 	return strings.HasSuffix(header.Value, "/*")
-}
-
-// 将 Content 的内容解析到 Value 和 Q 中
-func parseHeader(content string) *Header {
-	index := strings.IndexByte(content, ';')
-	if index < 0 { // 不包含 ; 表示除主内容不包含其它任何附加信息
-		return &Header{Content: content, Value: content, Q: 1}
-	}
-
-	val := content[:index]
-	if index = strings.LastIndex(content, ";q="); index >= 0 {
-		q, err := strconv.ParseFloat(content[index+3:], 32)
-		if err != nil {
-			return &Header{Content: content, Value: val, Err: err}
-		}
-		return &Header{Content: content, Value: val, Q: float32(q)}
-	}
-	return &Header{Content: content, Value: val, Q: 1}
 }
 
 // Accept 返回报头 Accept 处理后的内容列表
@@ -84,29 +83,51 @@ func Parse(header string, any string) []*Header {
 
 	accepts := make([]*Header, 0, strings.Count(header, ",")+1)
 
-	for {
-		index := strings.IndexByte(header, ',')
-		if index == 0 { // 过滤掉空值
-			header = header[1:]
-			continue
+	items := strings.Split(header, ",")
+	for _, v := range items {
+		if v != "" {
+			accepts = append(accepts, parseHeader(v))
 		}
-
-		if index == -1 { // 最后一条数据
-			if header != "" {
-				accepts = append(accepts, parseHeader(header))
-			}
-			break
-		}
-
-		// 由上面的两个 if 保证，此处 v 肯定不为空
-		accepts = append(accepts, parseHeader(header[:index]))
-
-		header = header[index+1:]
 	}
 
 	sortHeaders(accepts, any)
 
 	return accepts
+}
+
+// 将 Content 的内容解析到 Value 和 Q 中
+func parseHeader(content string) *Header {
+	items := strings.Split(content, ";")
+
+	h := &Header{
+		Raw:    content,
+		Params: make(map[string]string, len(items)),
+		Value:  items[0],
+	}
+
+	if len(items) < 2 {
+		h.Q = 1
+		return h
+	}
+
+	for i := 1; i < len(items); i++ {
+		item := items[i]
+		index := strings.IndexByte(item, '=')
+		if index < 0 {
+			h.Params[item] = ""
+		} else {
+			k, v := item[:index], item[index+1:]
+			h.Params[k] = v
+		}
+	}
+
+	if h.Params["q"] != "" {
+		h.Q, h.Err = strconv.ParseFloat(h.Params["q"], 32)
+	} else {
+		h.Q = 1
+	}
+
+	return h
 }
 
 func sortHeaders(accepts []*Header, any string) {
@@ -119,6 +140,8 @@ func sortHeaders(accepts []*Header, any string) {
 		}
 
 		switch {
+		case ii.Value == jj.Value:
+			return len(ii.Params) > len(jj.Params)
 		case ii.Value == any:
 			return false
 		case jj.Value == any:

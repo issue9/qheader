@@ -95,7 +95,11 @@ func TestParseHeader(t *testing.T) {
 
 	// 要求 q 必须在最后，否则被录作 q 值的一部分
 	h = parseHeader("text/html;q=0.9;format=xx")
-	a.Error(h.Err)
+	a.NotError(h.Err).
+		Equal(h.Raw, "text/html;q=0.9;format=xx").
+		Equal(h.Q, float32(0.9)).
+		Equal(h.Value, "text/html").
+		Equal(h.Params, map[string]string{"format": "xx", "q": "0.9"})
 
 	h = parseHeader("text/html;format=xx;q=x.9")
 	a.Error(h.Err)
@@ -229,4 +233,13 @@ func TestSortHeaders(t *testing.T) {
 	a.Equal(as[2].Value, "en")
 	a.Equal(as[3].Value, "en-us")
 	a.Equal(as[4].Value, "*")
+
+	// Params 不一样
+	as = []*Header{
+		{Raw: "1", Value: "zh-cn", Q: 0.7},
+		{Raw: "2", Value: "zh-cn", Q: 0.7, Params: map[string]string{"level": "1"}},
+	}
+	sortHeaders(as, "*")
+	a.Equal(as[0].Raw, "2")
+	a.Equal(as[1].Raw, "1")
 }
