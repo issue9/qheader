@@ -44,23 +44,31 @@ func (header *Header) hasWildcard() bool {
 }
 
 // Accept 返回报头 Accept 处理后的内容列表
+//
+// */* 会被排在最后。
 func Accept(r *http.Request) []*Header {
 	return Parse(r.Header.Get("Accept"), "*/*")
 }
 
 // AcceptLanguage 返回报头 Accept-Language 处理后的内容列表
+//
+// 并不会将 * 排序在最后，* 表示匹配任意非列表中的字段。
 func AcceptLanguage(r *http.Request) []*Header {
-	return Parse(r.Header.Get("Accept-Language"), "*")
+	return Parse(r.Header.Get("Accept-Language"), "")
 }
 
 // AcceptCharset 返回报头 Accept-Charset 处理后的内容列表
+//
+// 并不会将 * 排序在最后，* 表示匹配任意非列表中的字段。
 func AcceptCharset(r *http.Request) []*Header {
-	return Parse(r.Header.Get("Accept-Charset"), "*")
+	return Parse(r.Header.Get("Accept-Charset"), "")
 }
 
 // AcceptEncoding 返回报头 Accept-Encoding 处理后的内容列表
+//
+// 并不会将 * 排序在最后，* 表示匹配任意非列表中的字段。
 func AcceptEncoding(r *http.Request) []*Header {
-	return Parse(r.Header.Get("Accept-Encoding"), "*")
+	return Parse(r.Header.Get("Accept-Encoding"), "")
 }
 
 // Parse 将报头内容解析为 []*Header，并对内容进行排序之后返回
@@ -75,9 +83,9 @@ func AcceptEncoding(r *http.Request) []*Header {
 // 其中的 text/html 不会被返回，application/xml 的优先级会高于 application/*
 //
 // header 表示报头的内容；
-// any 表示通配符的值，只能是 */* 或是 *，其它情况则 panic；
+// any 表示通配符的值，只能是 */*、* 和空值，其它情况则 panic；
 func Parse(header string, any string) []*Header {
-	if any != "*" && any != "*/*" {
+	if any != "*" && any != "*/*" && any != "" {
 		panic("any 值错误")
 	}
 

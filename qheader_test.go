@@ -60,6 +60,19 @@ func TestAcceptLanguage(t *testing.T) {
 	a.Equal(accepts[2].Value, "zh-tw")
 }
 
+func TestAcceptEncoding(t *testing.T) {
+	a := assert.New(t)
+
+	r := httptest.NewRequest(http.MethodGet, "/path", nil)
+	r.Header.Add("Accept-Encoding", "gzip;q=0.5,compress;q=0.8,*;q=0.6,br")
+	accepts := AcceptEncoding(r)
+	a.NotNil(accepts)
+	a.Equal(accepts[0].Value, "br")
+	a.Equal(accepts[1].Value, "compress")
+	a.Equal(accepts[2].Value, "*")
+	a.Equal(accepts[3].Value, "gzip")
+}
+
 func TestParseHeader(t *testing.T) {
 	a := assert.New(t)
 
