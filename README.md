@@ -7,6 +7,11 @@ qheader
 
 解析报 quality factor 报头的内容，诸如 Accept、Accept-Charset 等报头。
 
+```go
+accepts := qheader.AcceptEncoding("gzip,compress;q=0.9,*;q=0.5,br")
+// 返回 br,gzip,compress,* 的顺序
+```
+
 安装
 ----
 

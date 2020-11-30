@@ -10,32 +10,6 @@ import (
 	"github.com/issue9/assert"
 )
 
-func BenchmarkParseHeader(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_ = parseHeader("application/xml;q=0.9")
-	}
-}
-
-func BenchmarkParse_multiple(b *testing.B) {
-	a := assert.New(b)
-
-	str := "application/json;q=0.9,text/plain;q=0.8,text/html,text/xml,*/*;q=0.1"
-	for i := 0; i < b.N; i++ {
-		as := Parse(str, "*/*")
-		a.True(len(as) > 0)
-	}
-}
-
-func BenchmarkParse_one(b *testing.B) {
-	a := assert.New(b)
-
-	str := "application/json;q=0.9"
-	for i := 0; i < b.N; i++ {
-		as := Parse(str, "*/*")
-		a.True(len(as) > 0)
-	}
-}
-
 func TestAccept(t *testing.T) {
 	a := assert.New(t)
 
@@ -54,7 +28,7 @@ func TestAcceptLanguage(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/path", nil)
 	r.Header.Add("Accept-Language", "zh-tw;q=0.5,zh-cn;q=0.8,en;q=0.8")
 	accepts := AcceptLanguage(r)
-	a.NotNil(accepts)
+	a.Equal(3, len(accepts))
 	a.Equal(accepts[0].Value, "zh-cn")
 	a.Equal(accepts[1].Value, "en")
 	a.Equal(accepts[2].Value, "zh-tw")
@@ -66,11 +40,25 @@ func TestAcceptEncoding(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/path", nil)
 	r.Header.Add("Accept-Encoding", "gzip;q=0.5,compress;q=0.8,*;q=0.6,br")
 	accepts := AcceptEncoding(r)
-	a.NotNil(accepts)
+	a.Equal(4, len(accepts))
 	a.Equal(accepts[0].Value, "br")
 	a.Equal(accepts[1].Value, "compress")
 	a.Equal(accepts[2].Value, "*")
 	a.Equal(accepts[3].Value, "gzip")
+}
+
+func TestAcceptCharset(t *testing.T) {
+	a := assert.New(t)
+
+	r := httptest.NewRequest(http.MethodGet, "/path", nil)
+	r.Header.Add("Accept-Charset", "utf8;q=0.5,utf16;q=0.5,*;q=0.5,cp936,utf32;q=0.4")
+	accepts := AcceptCharset(r)
+	a.Equal(len(accepts), 5)
+	a.Equal(accepts[0].Value, "cp936")
+	a.Equal(accepts[1].Value, "utf8")
+	a.Equal(accepts[2].Value, "utf16")
+	a.Equal(accepts[3].Value, "*")
+	a.Equal(accepts[4].Value, "utf32")
 }
 
 func TestParseHeader(t *testing.T) {
@@ -243,8 +231,8 @@ func TestSortHeaders(t *testing.T) {
 	sortHeaders(as, "*")
 	a.Equal(as[0].Value, "zh-tw")
 	a.Equal(as[1].Value, "zh-cn")
-	a.Equal(as[2].Value, "en")
-	a.Equal(as[3].Value, "en-us")
+	a.Equal(as[2].Value, "en-us")
+	a.Equal(as[3].Value, "en")
 	a.Equal(as[4].Value, "*")
 
 	// Params 不一样

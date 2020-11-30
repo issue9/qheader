@@ -54,21 +54,21 @@ func Accept(r *http.Request) []*Header {
 //
 // 并不会将 * 排序在最后，* 表示匹配任意非列表中的字段。
 func AcceptLanguage(r *http.Request) []*Header {
-	return Parse(r.Header.Get("Accept-Language"), "")
+	return Parse(r.Header.Get("Accept-Language"), "*")
 }
 
 // AcceptCharset 返回报头 Accept-Charset 处理后的内容列表
 //
 // 并不会将 * 排序在最后，* 表示匹配任意非列表中的字段。
 func AcceptCharset(r *http.Request) []*Header {
-	return Parse(r.Header.Get("Accept-Charset"), "")
+	return Parse(r.Header.Get("Accept-Charset"), "*")
 }
 
 // AcceptEncoding 返回报头 Accept-Encoding 处理后的内容列表
 //
 // 并不会将 * 排序在最后，* 表示匹配任意非列表中的字段。
 func AcceptEncoding(r *http.Request) []*Header {
-	return Parse(r.Header.Get("Accept-Encoding"), "")
+	return Parse(r.Header.Get("Accept-Encoding"), "*")
 }
 
 // Parse 将报头内容解析为 []*Header，并对内容进行排序之后返回
@@ -156,8 +156,10 @@ func sortHeaders(accepts []*Header, any string) {
 			return true
 		case ii.hasWildcard(): // 如果 any == * 则此判断不启作用
 			return false
-		default: // !ii.hasWildcard()
-			return jj.hasWildcard()
+		case jj.hasWildcard():
+			return true
+		default:
+			return ii.Value > jj.Value
 		}
 	})
 }
