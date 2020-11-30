@@ -51,14 +51,15 @@ func TestAcceptCharset(t *testing.T) {
 	a := assert.New(t)
 
 	r := httptest.NewRequest(http.MethodGet, "/path", nil)
-	r.Header.Add("Accept-Charset", "utf8;q=0.5,utf16;q=0.5,*;q=0.5,cp936,utf32;q=0.4")
+	r.Header.Add("Accept-Charset", "utf8;q=0.5,abc;q=0.5,defg;q=0.5,*;q=0.5,cp936,utf32;q=0.4")
 	accepts := AcceptCharset(r)
-	a.Equal(len(accepts), 5)
+	a.Equal(len(accepts), 6)
 	a.Equal(accepts[0].Value, "cp936")
 	a.Equal(accepts[1].Value, "utf8")
-	a.Equal(accepts[2].Value, "utf16")
-	a.Equal(accepts[3].Value, "*")
-	a.Equal(accepts[4].Value, "utf32")
+	a.Equal(accepts[2].Value, "abc")
+	a.Equal(accepts[3].Value, "defg")
+	a.Equal(accepts[4].Value, "*")
+	a.Equal(accepts[5].Value, "utf32")
 }
 
 func TestParseHeader(t *testing.T) {
@@ -220,7 +221,7 @@ func TestSortHeaders(t *testing.T) {
 	a.Equal(as[3].Value, "b/*")
 	a.Equal(as[4].Value, "*/*")
 
-	// Q 值不一样
+	// 相同 Q 值，保持原样
 	as = []*Header{
 		{Value: "zh-cn", Q: 0.7},
 		{Value: "zh-tw", Q: 0.8},
@@ -231,8 +232,8 @@ func TestSortHeaders(t *testing.T) {
 	sortHeaders(as, "*")
 	a.Equal(as[0].Value, "zh-tw")
 	a.Equal(as[1].Value, "zh-cn")
-	a.Equal(as[2].Value, "en-us")
-	a.Equal(as[3].Value, "en")
+	a.Equal(as[2].Value, "en")
+	a.Equal(as[3].Value, "en-us")
 	a.Equal(as[4].Value, "*")
 
 	// Params 不一样

@@ -82,6 +82,8 @@ func AcceptEncoding(r *http.Request) []*Header {
 //  application/*;q=0.1,application/xml;q=0.1,text/html;q=0
 // 其中的 text/html 不会被返回，application/xml 的优先级会高于 application/*
 //
+// Q 值相同时，按照原来的顺序返回。
+//
 // header 表示报头的内容；
 // any 表示通配符的值，只能是 */*、* 和空值，其它情况则 panic；
 func Parse(header string, any string) []*Header {
@@ -159,7 +161,7 @@ func sortHeaders(accepts []*Header, any string) {
 		case jj.hasWildcard():
 			return true
 		default:
-			return ii.Value > jj.Value
+			return false
 		}
 	})
 }
