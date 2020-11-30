@@ -76,13 +76,7 @@ func AcceptEncoding(r *http.Request) []*Header {
 //
 // 排序方式如下:
 //
-// Q 值大的靠前，如果 Q 值相同，则全名的比带通配符的靠前，*/* 最后。
-//
-// q 值为 0 的数据将被过滤，比如：
-//  application/*;q=0.1,application/xml;q=0.1,text/html;q=0
-// 其中的 text/html 不会被返回，application/xml 的优先级会高于 application/*
-//
-// Q 值相同时，按照原来的顺序返回。
+// Q 值大的靠前，如果 Q 值相同，则全名的比带通配符的靠前，*/* 最后，都是全名则按原来顺序返回。
 //
 // header 表示报头的内容；
 // any 表示通配符的值，只能是 */*、* 和空值，其它情况则 panic；

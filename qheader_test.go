@@ -14,12 +14,13 @@ func TestAccept(t *testing.T) {
 	a := assert.New(t)
 
 	r := httptest.NewRequest(http.MethodGet, "/path", nil)
-	r.Header.Add("Accept", "text/json;q=0.5,text/xml;q=0.8,application/xml;q=0.8")
+	r.Header.Add("Accept", "text/json;q=0.5,text/xml;q=0.8,application/xml;q=0.8,zero;q=0")
 	accepts := Accept(r)
 	a.NotNil(accepts)
 	a.Equal(accepts[0].Value, "text/xml")
 	a.Equal(accepts[1].Value, "application/xml")
 	a.Equal(accepts[2].Value, "text/json")
+	a.Equal(accepts[3].Value, "zero").Equal(accepts[3].Q, 0.0)
 }
 
 func TestAcceptLanguage(t *testing.T) {
