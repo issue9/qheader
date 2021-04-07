@@ -82,9 +82,10 @@ func TestParseHeader(t *testing.T) {
 		NotError(h.Err)
 
 	h = parseHeader(";application/xml;q=0.9")
-	a.Equal(h.Value, "").
-		Equal(h.Q, float32(0.9)).
-		NotError(h.Err)
+	a.Error(h.Err).
+		Equal(h.Raw, ";application/xml;q=0.9").
+		Empty(h.Value).
+		Empty(h.Params)
 
 	h = parseHeader("application/xml;qq=xx;q=0.9")
 	a.Equal(h.Value, "application/xml").
@@ -118,9 +119,9 @@ func TestParse(t *testing.T) {
 		Parse(",a1", "not-allow")
 	})
 
-	as := Parse(",a1,a2,a3;q=0.5,a4,a5;q=0.9,a6;a61;q=0.8", "*/*")
+	as := Parse("a0,a1,a2,a3;q=0.5,a4,a5;q=0.9,a6;a61;q=0.8", "*/*")
 	a.NotEmpty(as)
-	a.Equal(len(as), 6)
+	a.Equal(len(as), 7)
 	// 确定排序是否正常
 	a.Equal(as[0].Q, float32(1.0))
 	a.Equal(as[5].Q, float32(.5))

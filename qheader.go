@@ -4,6 +4,7 @@
 package qheader
 
 import (
+	"mime"
 	"net/http"
 	"sort"
 	"strconv"
@@ -12,7 +13,7 @@ import (
 
 // Header 表示报头内容的单个元素内容
 //
-// 比如 zh-cmt;q=0.8, zh-cmn;q=1 分根据 , 拆分成两个 Header 对象。
+// 比如 zh-cmt;q=0.8, zh-cmn;q=1, 拆分成两个 Header 对象。
 type Header struct {
 	// 完整的报头内容
 	Raw string
@@ -101,28 +102,23 @@ func Parse(header string, any string) []*Header {
 
 // 将 Content 的内容解析到 Value 和 Q 中
 func parseHeader(content string) *Header {
-	items := strings.Split(content, ";")
+	val, params, err := mime.ParseMediaType(content)
+	if err != nil {
+		return &Header{
+			Err: err,
+			Raw: content,
+		}
+	}
 
 	h := &Header{
 		Raw:    content,
-		Params: make(map[string]string, len(items)),
-		Value:  items[0],
+		Params: params,
+		Value:  val,
 	}
 
-	if len(items) < 2 {
+	if len(params) == 0 {
 		h.Q = 1
 		return h
-	}
-
-	for i := 1; i < len(items); i++ {
-		item := items[i]
-		index := strings.IndexByte(item, '=')
-		if index < 0 {
-			h.Params[item] = ""
-		} else {
-			k, v := item[:index], item[index+1:]
-			h.Params[k] = v
-		}
 	}
 
 	if h.Params["q"] != "" {
