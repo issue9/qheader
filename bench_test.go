@@ -5,7 +5,7 @@ package qheader
 import (
 	"testing"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 )
 
 func BenchmarkParseHeader(b *testing.B) {
@@ -15,7 +15,7 @@ func BenchmarkParseHeader(b *testing.B) {
 }
 
 func BenchmarkParse_multiple(b *testing.B) {
-	a := assert.New(b)
+	a := assert.New(b, false)
 
 	str := "application/json;q=0.9,text/plain;q=0.8,text/html,text/xml,*/*;q=0.1"
 	for i := 0; i < b.N; i++ {
@@ -25,7 +25,7 @@ func BenchmarkParse_multiple(b *testing.B) {
 }
 
 func BenchmarkParse_one(b *testing.B) {
-	a := assert.New(b)
+	a := assert.New(b, false)
 
 	str := "application/json;q=0.9"
 	for i := 0; i < b.N; i++ {

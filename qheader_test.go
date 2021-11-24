@@ -7,11 +7,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 )
 
 func TestAccept(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	r := httptest.NewRequest(http.MethodGet, "/path", nil)
 	r.Header.Add("Accept", "text/json;q=0.5,text/xml;q=0.8,application/xml;q=0.8,zero;q=0")
@@ -24,7 +24,7 @@ func TestAccept(t *testing.T) {
 }
 
 func TestAcceptLanguage(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	r := httptest.NewRequest(http.MethodGet, "/path", nil)
 	r.Header.Add("Accept-Language", "zh-tw;q=0.5,zh-cn;q=0.8,en;q=0.8")
@@ -36,7 +36,7 @@ func TestAcceptLanguage(t *testing.T) {
 }
 
 func TestAcceptEncoding(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	r := httptest.NewRequest(http.MethodGet, "/path", nil)
 	r.Header.Add("Accept-Encoding", "gzip;q=0.5,compress;q=0.8,*;q=0.6,br")
@@ -49,7 +49,7 @@ func TestAcceptEncoding(t *testing.T) {
 }
 
 func TestAcceptCharset(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	r := httptest.NewRequest(http.MethodGet, "/path", nil)
 	r.Header.Add("Accept-Charset", "utf8;q=0.5,abc;q=0.5,defg;q=0.5,*;q=0.5,cp936,utf32;q=0.4")
@@ -64,7 +64,7 @@ func TestAcceptCharset(t *testing.T) {
 }
 
 func TestParseHeader(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	h := parseHeader("application/xml")
 	a.Equal(h.Value, "application/xml").
@@ -113,7 +113,7 @@ func TestParseHeader(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	a.Panic(func() {
 		Parse(",a1", "not-allow")
@@ -162,7 +162,7 @@ func TestParse(t *testing.T) {
 }
 
 func TestSortHeaders(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	as := []*Header{
 		{Value: "*/*", Q: 0.7},
