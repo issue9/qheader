@@ -4,44 +4,14 @@
 package qheader
 
 import (
-	"mime"
 	"net/http"
-	"sort"
-	"strconv"
 	"strings"
 )
 
-// Header 表示报头内容的单个元素内容
-//
-// 比如 zh-cmt;q=0.8, zh-cmn;q=1, 拆分成两个 Header 对象。
-type Header struct {
-	// 完整的报头内容
-	Raw string
-
-	// 解析之后的内容
-
-	// 主值
-	// 比如 application/json;q=0.9，Value 的值为 application/json
-	Value string
-
-	// 其它参数，q 参数也在其中。如果参数数只有名称，没有值，则键值为空。
-	// 比如以下值 application/json;q=0.9;level=1;p 将被解析为以下内容：
-	//  map[string]string {
-	//      "q": "0.9",
-	//      "level": "1",
-	//      "p": "",
-	//  }
-	Params map[string]string
-
-	// 为 q 参数的转换后的 float64 类型值
-	Q float64
-
-	// 如果 Q 解析失败，则会将错误信息保存在 Err 上
-	Err error
-}
-
-func (header *Header) hasWildcard() bool {
-	return strings.HasSuffix(header.Value, "/*")
+func Destroy(v []*Header) {
+	for _, vv := range v {
+		pool.Put(vv)
+	}
 }
 
 // Accept 返回报头 Accept 处理后的内容列表
@@ -98,60 +68,4 @@ func Parse(header string, any string) []*Header {
 	sortHeaders(accepts, any)
 
 	return accepts
-}
-
-// 将 Content 的内容解析到 Value 和 Q 中
-func parseHeader(content string) *Header {
-	val, params, err := mime.ParseMediaType(content)
-	if err != nil {
-		return &Header{
-			Err: err,
-			Raw: content,
-		}
-	}
-
-	h := &Header{
-		Raw:    content,
-		Params: params,
-		Value:  val,
-	}
-
-	if len(params) == 0 {
-		h.Q = 1
-		return h
-	}
-
-	if h.Params["q"] != "" {
-		h.Q, h.Err = strconv.ParseFloat(h.Params["q"], 32)
-	} else {
-		h.Q = 1
-	}
-
-	return h
-}
-
-func sortHeaders(accepts []*Header, any string) {
-	sort.SliceStable(accepts, func(i, j int) bool {
-		ii := accepts[i]
-		jj := accepts[j]
-
-		if ii.Q != jj.Q {
-			return ii.Q > jj.Q
-		}
-
-		switch {
-		case ii.Value == jj.Value:
-			return len(ii.Params) > len(jj.Params)
-		case ii.Value == any:
-			return false
-		case jj.Value == any:
-			return true
-		case ii.hasWildcard(): // 如果 any == * 则此判断不启作用
-			return false
-		case jj.hasWildcard():
-			return true
-		default:
-			return false
-		}
-	})
 }

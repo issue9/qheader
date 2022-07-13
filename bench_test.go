@@ -25,11 +25,29 @@ func BenchmarkParse(b *testing.B) {
 		}
 	})
 
+	b.Run("pool-4", func(b *testing.B) {
+		str := "application/json;q=0.9,text/plain;q=0.8,text/html,text/xml,*/*;q=0.1"
+		for i := 0; i < b.N; i++ {
+			as := Parse(str, "*/*")
+			a.True(len(as) > 0)
+			Destroy(as)
+		}
+	})
+
 	b.Run("1", func(b *testing.B) {
 		str := "application/json;q=0.9"
 		for i := 0; i < b.N; i++ {
 			as := Parse(str, "*/*")
 			a.True(len(as) > 0)
+		}
+	})
+
+	b.Run("pool-1", func(b *testing.B) {
+		str := "application/json;q=0.9"
+		for i := 0; i < b.N; i++ {
+			as := Parse(str, "*/*")
+			a.True(len(as) > 0)
+			Destroy(as)
 		}
 	})
 }
