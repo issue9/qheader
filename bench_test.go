@@ -14,22 +14,22 @@ func BenchmarkParseHeader(b *testing.B) {
 	}
 }
 
-func BenchmarkParse_multiple(b *testing.B) {
+func BenchmarkParse(b *testing.B) {
 	a := assert.New(b, false)
 
-	str := "application/json;q=0.9,text/plain;q=0.8,text/html,text/xml,*/*;q=0.1"
-	for i := 0; i < b.N; i++ {
-		as := Parse(str, "*/*")
-		a.True(len(as) > 0)
-	}
-}
+	b.Run("4", func(b *testing.B) {
+		str := "application/json;q=0.9,text/plain;q=0.8,text/html,text/xml,*/*;q=0.1"
+		for i := 0; i < b.N; i++ {
+			as := Parse(str, "*/*")
+			a.True(len(as) > 0)
+		}
+	})
 
-func BenchmarkParse_one(b *testing.B) {
-	a := assert.New(b, false)
-
-	str := "application/json;q=0.9"
-	for i := 0; i < b.N; i++ {
-		as := Parse(str, "*/*")
-		a.True(len(as) > 0)
-	}
+	b.Run("1", func(b *testing.B) {
+		str := "application/json;q=0.9"
+		for i := 0; i < b.N; i++ {
+			as := Parse(str, "*/*")
+			a.True(len(as) > 0)
+		}
+	})
 }
