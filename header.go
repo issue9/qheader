@@ -10,22 +10,20 @@ import (
 	"sync"
 )
 
-var pool = &sync.Pool{New: func() interface{} { return &Header{} }}
+var headPool = &sync.Pool{New: func() interface{} { return &Header{} }}
 
 // Header 表示报头内容的单个元素内容
 //
 // 比如 zh-cmt;q=0.8, zh-cmn;q=1, 拆分成两个 Header 对象。
 type Header struct {
-	// 完整的报头内容
-	Raw string
+	Raw string // 原始值
 
-	// 解析之后的内容
+	// 以下为解析之后的内容
 
-	// 主值
-	// 比如 application/json;q=0.9，Value 的值为 application/json
+	// 主值，比如 application/json;q=0.9，Value 的值为 application/json
 	Value string
 
-	// 其它参数，q 参数也在其中。如果参数数只有名称，没有值，则键值为空。
+	// 其它参数，如果参数数只有名称，没有值，则键值为空。q 参数也在其中。
 	// 比如以下值 application/json;q=0.9;level=1;p 将被解析为以下内容：
 	//  map[string]string {
 	//      "q": "0.9",
@@ -37,7 +35,8 @@ type Header struct {
 	// 为 q 参数的转换后的 float64 类型值
 	Q float64
 
-	// 如果 Q 解析失败，则会将错误信息保存在 Err 上
+	// 如果 Q 解析失败，则会将错误信息保存在 Err 上。
+	// 此值不为空，在排序时将排在最后。
 	Err error
 }
 
@@ -46,7 +45,7 @@ func (header *Header) hasWildcard() bool {
 }
 
 func parseHeader(content string) *Header {
-	h := pool.Get().(*Header)
+	h := headPool.Get().(*Header)
 	h.Q = 1
 	h.Raw = content
 

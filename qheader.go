@@ -6,39 +6,65 @@ package qheader
 import (
 	"net/http"
 	"strings"
+	"sync"
 )
 
-func Destroy(v []*Header) {
-	for _, vv := range v {
-		pool.Put(vv)
+const destroyMaxHeadersLength = 10
+
+var qheaderPool = sync.Pool{New: func() interface{} {
+	return &QHeader{Headers: make([]*Header, 0, 3)}
+}}
+
+type QHeader struct {
+	Raw string // 完整的报头内容
+
+	// 以下为解析并排序之后第一个元素的值。
+
+	Value  string
+	Params map[string]string
+	Q      float64
+
+	// 完整的元素列表
+	Headers []*Header
+}
+
+// Destroy 回收内存
+//
+// 这是一个可选操作，如果 QHeader 对象操作频繁，调用此方法在一定程序上可以增加性能。
+func (q *QHeader) Destroy() {
+	if len(q.Headers) < destroyMaxHeadersLength {
+		for _, vv := range q.Headers {
+			headPool.Put(vv)
+		}
+		qheaderPool.Put(q)
 	}
 }
 
 // Accept 返回报头 Accept 处理后的内容列表
 //
 // */* 会被排在最后。
-func Accept(r *http.Request) []*Header {
+func Accept(r *http.Request) *QHeader {
 	return Parse(r.Header.Get("Accept"), "*/*")
 }
 
 // AcceptLanguage 返回报头 Accept-Language 处理后的内容列表
 //
 // 并不会将 * 排序在最后，* 表示匹配任意非列表中的字段。
-func AcceptLanguage(r *http.Request) []*Header {
+func AcceptLanguage(r *http.Request) *QHeader {
 	return Parse(r.Header.Get("Accept-Language"), "*")
 }
 
 // AcceptCharset 返回报头 Accept-Charset 处理后的内容列表
 //
 // 并不会将 * 排序在最后，* 表示匹配任意非列表中的字段。
-func AcceptCharset(r *http.Request) []*Header {
+func AcceptCharset(r *http.Request) *QHeader {
 	return Parse(r.Header.Get("Accept-Charset"), "*")
 }
 
 // AcceptEncoding 返回报头 Accept-Encoding 处理后的内容列表
 //
 // 并不会将 * 排序在最后，* 表示匹配任意非列表中的字段。
-func AcceptEncoding(r *http.Request) []*Header {
+func AcceptEncoding(r *http.Request) *QHeader {
 	return Parse(r.Header.Get("Accept-Encoding"), "*")
 }
 
@@ -51,21 +77,35 @@ func AcceptEncoding(r *http.Request) []*Header {
 //
 // header 表示报头的内容；
 // any 表示通配符的值，只能是 */*、* 和空值，其它情况则 panic；
-func Parse(header string, any string) []*Header {
+func Parse(header string, any string) *QHeader {
 	if any != "*" && any != "*/*" && any != "" {
 		panic("any 值错误")
 	}
 
-	accepts := make([]*Header, 0, strings.Count(header, ",")+1)
+	qh := qheaderPool.Get().(*QHeader)
+	qh.Raw = header
+	qh.Headers = qh.Headers[:0]
+	qh.Params = nil
+	qh.Q = 0
+	qh.Value = ""
 
 	items := strings.Split(header, ",")
 	for _, v := range items {
 		if v != "" {
-			accepts = append(accepts, parseHeader(v))
+			qh.Headers = append(qh.Headers, parseHeader(v))
 		}
 	}
 
-	sortHeaders(accepts, any)
+	sortHeaders(qh.Headers, any)
 
-	return accepts
+	if len(qh.Headers) == 0 || qh.Headers[0].Err != nil {
+		qh.Destroy()
+		return nil
+	}
+
+	first := qh.Headers[0]
+	qh.Value = first.Value
+	qh.Params = first.Params
+	qh.Q = first.Q
+	return qh
 }
