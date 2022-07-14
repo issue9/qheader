@@ -12,7 +12,7 @@ import (
 const destroyMaxHeadersLength = 10
 
 var qheaderPool = sync.Pool{New: func() interface{} {
-	return &QHeader{Headers: make([]*Header, 0, 3)}
+	return &QHeader{Items: make([]*Item, 0, 3)}
 }}
 
 type QHeader struct {
@@ -25,16 +25,16 @@ type QHeader struct {
 	Q      float64
 
 	// 完整的元素列表
-	Headers []*Header
+	Items []*Item
 }
 
 // Destroy 回收内存
 //
 // 这是一个可选操作，如果 QHeader 对象操作频繁，调用此方法在一定程序上可以增加性能。
 func (q *QHeader) Destroy() {
-	if len(q.Headers) < destroyMaxHeadersLength {
-		for _, vv := range q.Headers {
-			headPool.Put(vv)
+	if len(q.Items) < destroyMaxHeadersLength {
+		for _, vv := range q.Items {
+			itemPool.Put(vv)
 		}
 		qheaderPool.Put(q)
 	}
@@ -84,7 +84,7 @@ func Parse(header string, any string) *QHeader {
 
 	qh := qheaderPool.Get().(*QHeader)
 	qh.Raw = header
-	qh.Headers = qh.Headers[:0]
+	qh.Items = qh.Items[:0]
 	qh.Params = nil
 	qh.Q = 0
 	qh.Value = ""
@@ -92,18 +92,18 @@ func Parse(header string, any string) *QHeader {
 	items := strings.Split(header, ",")
 	for _, v := range items {
 		if v != "" {
-			qh.Headers = append(qh.Headers, parseHeader(v))
+			qh.Items = append(qh.Items, parseItem(v))
 		}
 	}
 
-	sortHeaders(qh.Headers, any)
+	sortItems(qh.Items, any)
 
-	if len(qh.Headers) == 0 || qh.Headers[0].Err != nil {
+	if len(qh.Items) == 0 || qh.Items[0].Err != nil {
 		qh.Destroy()
 		return nil
 	}
 
-	first := qh.Headers[0]
+	first := qh.Items[0]
 	qh.Value = first.Value
 	qh.Params = first.Params
 	qh.Q = first.Q

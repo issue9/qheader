@@ -10,12 +10,12 @@ import (
 	"sync"
 )
 
-var headPool = &sync.Pool{New: func() interface{} { return &Header{} }}
+var itemPool = &sync.Pool{New: func() interface{} { return &Item{} }}
 
-// Header 表示报头内容的单个元素内容
+// Item 表示报头内容的单个元素内容
 //
-// 比如 zh-cmt;q=0.8, zh-cmn;q=1, 拆分成两个 Header 对象。
-type Header struct {
+// 比如 zh-cmt;q=0.8, zh-cmn;q=1, 拆分成两个 Item 对象。
+type Item struct {
 	Raw string // 原始值
 
 	// 以下为解析之后的内容
@@ -40,12 +40,12 @@ type Header struct {
 	Err error
 }
 
-func (header *Header) hasWildcard() bool {
+func (header *Item) hasWildcard() bool {
 	return strings.HasSuffix(header.Value, "/*")
 }
 
-func parseHeader(content string) *Header {
-	h := headPool.Get().(*Header)
+func parseItem(content string) *Item {
+	h := itemPool.Get().(*Item)
 	h.Q = 1
 	h.Raw = content
 
@@ -59,10 +59,10 @@ func parseHeader(content string) *Header {
 	return h
 }
 
-func sortHeaders(accepts []*Header, any string) {
-	sort.SliceStable(accepts, func(i, j int) bool {
-		ii := accepts[i]
-		jj := accepts[j]
+func sortItems(items []*Item, any string) {
+	sort.SliceStable(items, func(i, j int) bool {
+		ii := items[i]
+		jj := items[j]
 
 		if ii.Err != nil {
 			return false

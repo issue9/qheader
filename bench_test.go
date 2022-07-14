@@ -8,9 +8,9 @@ import (
 	"github.com/issue9/assert/v2"
 )
 
-func BenchmarkParseHeader(b *testing.B) {
+func BenchmarkParseItem(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_ = parseHeader("application/xml;q=0.9")
+		_ = parseItem("application/xml;q=0.9")
 	}
 }
 
@@ -21,7 +21,7 @@ func BenchmarkParse(b *testing.B) {
 		str := "application/json;q=0.9,text/plain;q=0.8,text/html,text/xml,*/*;q=0.1"
 		for i := 0; i < b.N; i++ {
 			qh := Parse(str, "*/*")
-			a.True(len(qh.Headers) > 0)
+			a.True(len(qh.Items) > 0)
 		}
 	})
 
@@ -29,7 +29,7 @@ func BenchmarkParse(b *testing.B) {
 		str := "application/json;q=0.9,text/plain;q=0.8,text/html,text/xml,*/*;q=0.1"
 		for i := 0; i < b.N; i++ {
 			qh := Parse(str, "*/*")
-			a.True(len(qh.Headers) > 0)
+			a.True(len(qh.Items) > 0)
 			qh.Destroy()
 		}
 	})
@@ -38,7 +38,7 @@ func BenchmarkParse(b *testing.B) {
 		str := "application/json;q=0.9"
 		for i := 0; i < b.N; i++ {
 			qh := Parse(str, "*/*")
-			a.True(len(qh.Headers) > 0)
+			a.True(len(qh.Items) > 0)
 		}
 	})
 
@@ -46,7 +46,7 @@ func BenchmarkParse(b *testing.B) {
 		str := "application/json;q=0.9"
 		for i := 0; i < b.N; i++ {
 			qh := Parse(str, "*/*")
-			a.True(len(qh.Headers) > 0)
+			a.True(len(qh.Items) > 0)
 			qh.Destroy()
 		}
 	})
