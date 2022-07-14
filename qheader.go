@@ -68,7 +68,7 @@ func AcceptEncoding(r *http.Request) *QHeader {
 	return Parse(r.Header.Get("Accept-Encoding"), "*")
 }
 
-// Parse 将报头内容解析为 []*Header，并对内容进行排序之后返回
+// Parse 解析报头内容
 //
 //
 // 排序方式如下:

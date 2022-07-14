@@ -141,12 +141,12 @@ func TestSortHeaders(t *testing.T) {
 		{Value: "zh-tw", Q: 0.8},
 		{Value: "*", Q: 0.7},
 		{Value: "en", Q: 0.7, Err: errors.New("en")},
-		{Value: "en-us", Q: 0.7},
+		{Value: "en-us", Q: 0},
 	}
 	sortHeaders(as, "*")
 	a.Equal(as[0].Value, "zh-tw")
-	a.Equal(as[1].Value, "en-us")
-	a.Equal(as[2].Value, "*")
+	a.Equal(as[1].Value, "*")
+	a.Equal(as[2].Value, "en-us") // Q==0，在 Err!=nil 之前
 	a.Equal(as[3].Value, "zh-cn")
 	a.Equal(as[4].Value, "en")
 
