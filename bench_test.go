@@ -5,7 +5,7 @@ package qheader
 import (
 	"testing"
 
-	"github.com/issue9/assert/v2"
+	"github.com/issue9/assert/v3"
 )
 
 func BenchmarkParseItem(b *testing.B) {
