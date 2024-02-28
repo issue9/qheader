@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2019-2024 caixw
+//
 // SPDX-License-Identifier: MIT
 
 // Package qheader 用于处理 quality factor 报头
@@ -69,7 +71,6 @@ func AcceptEncoding(r *http.Request) *QHeader {
 }
 
 // Parse 解析报头内容
-//
 //
 // 排序方式如下:
 //
